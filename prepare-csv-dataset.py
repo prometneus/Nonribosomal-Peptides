@@ -3,6 +3,27 @@ import numpy as np
 from Bio import SeqIO
 
 
+DOWNLOAD_TAR = False
+TAR_URL = "https://dl.secondarymetabolites.org/mibig/mibig_gbk_2.0.tar.gz"
+TAR_FILENAME = TAR_URL.split('/')[-1]
+TAR_FILEPATH = f"./data/{TAR_FILENAME}"
+
+if DOWNLOAD_TAR:
+    import requests
+    import tarfile
+    from tqdm import tqdm
+
+    r = requests.get(TAR_URL, stream=True)
+
+    with open(TAR_FILEPATH, "wb") as f:
+        for data in tqdm(r.iter_content()):
+            f.write(data)
+
+    tar = tarfile.open(TAR_FILEPATH)
+    tar.extractall("./data/gbk/")
+    tar.close()
+
+
 # Pandas display options
 pd.set_option('display.max_colwidth', 30)
 pd.set_option('display.width', 2000)
@@ -25,7 +46,7 @@ def get_dna_from_row(row):
     print(gb_filename)
     try:
         result_seq = ""
-        for seq_record in SeqIO.parse(f"./data/gbk/{gb_filename}", "genbank"):
+        for seq_record in SeqIO.parse(f"./data/gbk/{TAR_FILENAME.replace('.tar.gz', '')}/{gb_filename}", "genbank"):
             result_seq += seq_record.seq
             break
         start, end = row["Domain location"].split("-")
